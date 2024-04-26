@@ -21,4 +21,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 Route::prefix('blogs')->controller(BlogController::class)->group(function(){
     Route::get('/all','all');
+    Route::post('/add', 'add');
+    Route::put('/edit/{id}', 'edit');
+    Route::delete('/delete/{id}', 'delete');
 });
