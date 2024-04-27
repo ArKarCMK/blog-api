@@ -13,7 +13,7 @@ class BlogController extends Controller
 {
     public function all()
     {
-        return Blog::latest()->get();
+        return Blog::latest()->with('comments')->get();
     }
 
     public function add(StoreBlogRequest $request)
@@ -68,4 +68,25 @@ class BlogController extends Controller
             ]);
         }
     }
+
+    public function storeComment(Request $request,  $id)
+    {
+        try{
+            $blog = Blog::find($id);
+            request()->validate([
+                'body'=> 'required'
+            ]);
+            return $blog->comments()->create([
+                'body' => $request->body,
+                'user_id'=> $request->user_id, 
+                'blog_id'=> $blog->id
+            ]);
+        }
+        catch(ValidationException $e){
+            return response()->json([
+                'error'=> $e->validator->errors()
+            ]);
+        }
+    }
+    
 }

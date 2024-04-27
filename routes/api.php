@@ -24,4 +24,5 @@ Route::prefix('blogs')->controller(BlogController::class)->group(function(){
     Route::post('/add', 'add');
     Route::put('/edit/{id}', 'edit');
     Route::delete('/delete/{id}', 'delete');
+    Route::post('/{id}/comment/store', 'storeComment');
 });
