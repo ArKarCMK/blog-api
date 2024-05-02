@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\BlogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\BlogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,10 +19,17 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::prefix('blogs')->controller(BlogController::class)->group(function(){
-    Route::get('/all','all');
+// blog table
+
+//public route
+Route::get('blogs/all', [BlogController::class, 'all']);
+
+//private  rotues
+Route::prefix('blogs')->middleware('auth:sanctum')->controller(BlogController::class)->group(function () {
     Route::post('/add', 'add');
     Route::put('/edit/{id}', 'edit');
     Route::delete('/delete/{id}', 'delete');
     Route::post('/{id}/comment/store', 'storeComment');
 });
+
+//e.o blog table
