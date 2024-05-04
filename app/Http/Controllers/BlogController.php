@@ -7,16 +7,18 @@ use Illuminate\Http\Request;
 // use Dotenv\Exception\ValidationException;
 use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
+use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class BlogController extends Controller
 {
     public function all()
     {
-        return Blog::latest()->get();
+        return Blog::latest()->with('comments')->get();
     }
 
-    public function add(StoreBlogRequest $request)
+    public function store(StoreBlogRequest $request)
     {
         try {
             $blog = $request->validated();
@@ -68,4 +70,7 @@ class BlogController extends Controller
             ]);
         }
     }
+
+    
+    
 }
