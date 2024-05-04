@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 // use Dotenv\Exception\ValidationException;
 use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
+use App\Models\Comment;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class BlogController extends Controller
@@ -16,7 +18,7 @@ class BlogController extends Controller
         return Blog::latest()->with('comments')->get();
     }
 
-    public function add(StoreBlogRequest $request)
+    public function store(StoreBlogRequest $request)
     {
         try {
             $blog = $request->validated();
@@ -69,24 +71,6 @@ class BlogController extends Controller
         }
     }
 
-    public function storeComment(Request $request,  $id)
-    {
-        try{
-            $blog = Blog::find($id);
-            request()->validate([
-                'body'=> 'required'
-            ]);
-            return $blog->comments()->create([
-                'body' => $request->body,
-                'user_id'=> $request->user_id, 
-                'blog_id'=> $blog->id
-            ]);
-        }
-        catch(ValidationException $e){
-            return response()->json([
-                'error'=> $e->validator->errors()
-            ]);
-        }
-    }
+    
     
 }
