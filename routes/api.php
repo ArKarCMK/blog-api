@@ -32,9 +32,10 @@ Route::prefix('blogs')->middleware('auth:sanctum')->controller(BlogController::c
     Route::post('/store', 'store');
     Route::put('/edit/{id}', 'edit');
     Route::delete('/delete/{id}', 'delete');
-    Route::post('/{id}/comment/store', 'storeComment');
-    Route::put('/comment/edit/{id}', 'updateComment');
-    Route::delete('/comment/delete/{id}', 'deleteComment');
+    Route::post('/{id}/subscription', 'subscription');
+    // Route::post('/{id}/comment/store', 'storeComment');
+    // Route::put('/comment/edit/{id}', 'updateComment');
+    // Route::delete('/comment/delete/{id}', 'deleteComment');
 });
 
 //e.o blog table
