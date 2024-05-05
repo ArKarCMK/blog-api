@@ -71,6 +71,21 @@ class BlogController extends Controller
         }
     }
 
+    public function subscription($id)
+    {
+        $blog = Blog::find($id);
+        if(auth()->user()->subscribedBlogs->contains($blog->id)){
+            $blog->subscribers()->detach(auth()->id());
+            return response()->json([
+                'message'=>  'data is successfully deleted'
+            ]);
+        } else {
+            $blog->subscribers()->attach(auth()->id());
+            return response()->json([
+                'message'=>  'data is successfully added'
+            ]);
+        };
+    }
     
     
 }
