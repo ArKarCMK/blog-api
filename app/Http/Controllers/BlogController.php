@@ -18,6 +18,19 @@ class BlogController extends Controller
         return Blog::latest()->with('comments')->get();
     }
 
+    public function latest()
+
+    {
+        return Blog::latest()->first();
+    }
+
+    public function show ($id)
+
+    {
+         return Blog::with('user', 'category', 'comments')->findOrFail($id);
+
+    }
+
     public function store(StoreBlogRequest $request)
     {
         try {

@@ -10,6 +10,20 @@ use Illuminate\Validation\ValidationException;
 
 class CommentController extends Controller
 {
+    public function all($id) 
+    {
+        try {
+         return Comment::where("blog_id", $id)
+         ->with("user")
+         ->get();
+            
+        } 
+        catch (ValidationException $e) {
+            return response()->json([
+                'error' => $e->validator->errors()
+            ]);
+        }
+    }
     public function store(Request $request,  $id)
     {
         try{
