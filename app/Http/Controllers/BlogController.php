@@ -31,6 +31,12 @@ class BlogController extends Controller
 
     }
 
+    public function filterByCategory($id) 
+    {
+        return Blog::where('category_id', $id)->get();
+    }
+
+
     public function store(StoreBlogRequest $request)
     {
         try {

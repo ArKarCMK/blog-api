@@ -4,6 +4,7 @@ use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 
 /*
@@ -27,6 +28,9 @@ Route::middleware(["auth:sanctum"])->get("/user", function (Request $request) {
 Route::get("/blogs/all", [BlogController::class, "all"]);
 Route::get("/blogs/popular", [BlogController::class, "latest"]);
 Route::get("/blogs/{id}", [BlogController::class, "show"]);
+Route::get("/blogs/category/{category_id}", [BlogController::class, "filterByCategory"]);
+
+Route::get("/categories/all", [CategoryController::class, "all"]);
 
 
 Route::get("/comments/{blog_id}", [CommentController::class, "all"]);
