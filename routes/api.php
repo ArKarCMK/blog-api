@@ -32,10 +32,8 @@ Route::middleware(["auth:sanctum"])->get("/user", function (Request $request) {
 Route::get("/blogs/all", [BlogController::class, "all"]);
 Route::get("/blogs/popular", [BlogController::class, "latest"]);
 Route::get("/blogs/{id}", [BlogController::class, "show"]);
-Route::get("/blogs/category/{category_id}", [
-    BlogController::class,
-    "filterByCategory",
-]);
+Route::get("/blogs/category/{category_id}", [BlogController::class,"filterByCategory"]);
+Route::get("/blogs/user/{user_id}", [BlogController::class, 'blogsByUser']);
 
 Route::get("/categories/all", [CategoryController::class, "all"]);
 
