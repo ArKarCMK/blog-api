@@ -8,8 +8,10 @@ use Illuminate\Http\Request;
 use App\Http\Requests\Blog\StoreBlogRequest;
 use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Comment;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+
 
 class BlogController extends Controller
 {
@@ -104,6 +106,23 @@ class BlogController extends Controller
                 'message'=>  'data is successfully added'
             ]);
         };
+    }
+
+    public function blogsByUser($userId)
+    {
+        try{
+            $blog = Blog::where('user_id', $userId)->get();
+ 
+            return response()->json([
+                'message' => 'data is successfully fetched',
+                'data' => $blog
+            ]);
+        } catch(\Exception $e) {
+            return response()->json([
+                'message' => 'Error Fetching User Blog',
+                'error' => $e->getMessage()
+            ]);
+        }
     }
     
     
