@@ -23,7 +23,7 @@ return new class extends Migration
                 ->onDelete('cascade');
             $table->string('title');
             $table->string('slug')->unique();
-            $table->text('intro');
+            // $table->text('intro');
             $table->text('body');
             $table->timestamps();
         });
