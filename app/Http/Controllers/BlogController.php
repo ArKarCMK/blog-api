@@ -12,82 +12,77 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
-
 class BlogController extends Controller
 {
     public function all()
     {
-        return Blog::latest()->with('comments')->get();
+        return Blog::latest()->with("comments")->paginate(6);
     }
 
     public function latest()
-
     {
         return Blog::latest()->first();
     }
 
-    public function show ($id)
-
+    public function show($id)
     {
-         return Blog::with('user', 'category', 'comments')->findOrFail($id);
-
+        return Blog::with("user", "category", "comments")->findOrFail($id);
     }
 
-    public function filterByCategory($id) 
+    public function filterByCategory($id)
     {
-        return Blog::where('category_id', $id)->get();
+        return Blog::where("category_id", $id)->get();
     }
-
 
     public function store(StoreBlogRequest $request)
     {
         try {
             $blog = $request->validated();
             Blog::create($blog);
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    "error" => $e->validator->errors(),
+                ],
+                422
+            );
         }
-        catch(ValidationException $e) {
-            return response()->json([
-                'error' => $e->validator->errors()
-            ], 422);
-        }
-
     }
 
-    public function edit (UpdateBlogRequest $request, $id)
+    public function edit(UpdateBlogRequest $request, $id)
     {
-        try{
+        try {
             $blog = Blog::find($id);
-            if($blog){
+            if ($blog) {
                 $data = $request->validated();
                 $blog->update($data);
                 return $blog;
-            }
-            else {
+            } else {
                 return null;
             }
-            
-        }
-        catch (ValidationException $e) {
-            return response()->json([
-                'error'=>$e->validator->errors()
-            ], 422);
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    "error" => $e->validator->errors(),
+                ],
+                422
+            );
         }
     }
 
     public function delete($id)
     {
-        try{
+        try {
             $blog = Blog::find($id);
-            if($blog){
+            if ($blog) {
                 $blog->delete($blog);
                 return response()->json([
-                    'message' => 'Blog is successfully deleted'
+                    "message" => "Blog is successfully deleted",
                 ]);
             }
-        }
-        catch(ValidationException $e){
+        } catch (ValidationException $e) {
             return response()->json([
-                'error'=> $e->validator->errors()
+                "error" => $e->validator->errors(),
             ]);
         }
     }
@@ -95,35 +90,37 @@ class BlogController extends Controller
     public function subscription($id)
     {
         $blog = Blog::find($id);
-        if(auth()->user()->subscribedBlogs->contains($blog->id)){
+        if (
+            auth()
+                ->user()
+                ->subscribedBlogs->contains($blog->id)
+        ) {
             $blog->subscribers()->detach(auth()->id());
             return response()->json([
-                'message'=>  'data is successfully deleted'
+                "message" => "data is successfully deleted",
             ]);
         } else {
             $blog->subscribers()->attach(auth()->id());
             return response()->json([
-                'message'=>  'data is successfully added'
+                "message" => "data is successfully added",
             ]);
-        };
+        }
     }
 
     public function blogsByUser($userId)
     {
-        try{
-            $blog = Blog::where('user_id', $userId)->get();
- 
+        try {
+            $blog = Blog::where("user_id", $userId)->get();
+
             return response()->json([
-                'message' => 'data is successfully fetched',
-                'data' => $blog
+                "message" => "data is successfully fetched",
+                "data" => $blog,
             ]);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Error Fetching User Blog',
-                'error' => $e->getMessage()
+                "message" => "Error Fetching User Blog",
+                "error" => $e->getMessage(),
             ]);
         }
     }
-    
-    
 }

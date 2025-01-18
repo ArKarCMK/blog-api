@@ -33,7 +33,6 @@ Route::get("/blogs/all", [BlogController::class, "all"]);
 Route::get("/blogs/popular", [BlogController::class, "latest"]);
 Route::get("/blogs/{id}", [BlogController::class, "show"]);
 Route::get("/blogs/category/{category_id}", [BlogController::class,"filterByCategory"]);
-Route::get("/blogs/user/{user_id}", [BlogController::class, 'blogsByUser']);
 
 Route::get("/categories/all", [CategoryController::class, "all"]);
 
@@ -49,6 +48,7 @@ Route::prefix("blogs")
         Route::put("/edit/{id}", "edit");
         Route::delete("/delete/{id}", "delete");
         Route::post("/{id}/subscription", "subscription");
+        Route::get("/user/{user_id}", "blogsByUser");
         // Route::post('/{id}/comment/store', 'storeComment');
         // Route::put('/comment/edit/{id}', 'updateComment');
         // Route::delete('/comment/delete/{id}', 'deleteComment');
