@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BlogController;
@@ -32,7 +31,10 @@ Route::middleware(["auth:sanctum"])->get("/user", function (Request $request) {
 Route::get("/blogs/all", [BlogController::class, "all"]);
 Route::get("/blogs/popular", [BlogController::class, "latest"]);
 Route::get("/blogs/{id}", [BlogController::class, "show"]);
-Route::get("/blogs/category/{category_id}", [BlogController::class,"filterByCategory"]);
+Route::get("/blogs/category/{category_id}", [
+    BlogController::class,
+    "filterByCategory",
+]);
 
 Route::get("/categories/all", [CategoryController::class, "all"]);
 
@@ -61,7 +63,8 @@ Route::prefix("comments")
     ->middleware("auth:sanctum")
     ->controller(CommentController::class)
     ->group(function () {
-        Route::post("{blogId}/store", "store");
+        // Route::post("{blogId}/store", "store");
+        Route::post("/store", "store");
         Route::put("/edit/{id}", "edit");
         Route::delete("/delete/{id}", "delete");
     });

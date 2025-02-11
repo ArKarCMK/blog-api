@@ -32,44 +32,41 @@ class RegisteredUserController extends Controller
                 "unique:" . User::class,
             ],
             "password" => ["required", "confirmed", Rules\Password::defaults()],
-            "profile_picture" => "nullable|image|mimes:jpeg,png,jpg,gif|max:2048",
+            "profile_picture" =>
+                "nullable|image|mimes:jpeg,png,jpg,gif|max:2048",
         ]);
-    
-    
+
         $user = User::create([
             "name" => $request->name,
             "email" => $request->email,
             "password" => Hash::make($request->password),
         ]);
 
-        if($request->hasFile('profile_picture')){
-            $file = $request->file('profile_picture');
+        if ($request->hasFile("profile_picture")) {
+            $file = $request->file("profile_picture");
 
             $binaryData = file_get_contents($file);
             if (!$binaryData) {
-        throw new \Exception('Failed to read binary data from profile picture.');
-    }
+                throw new \Exception(
+                    "Failed to read binary data from profile picture."
+                );
+            }
 
             $user->profile_picture = $binaryData;
 
             $user->save();
         }
 
-    
-
-       
-
         event(new Registered($user));
 
         Auth::login($user);
-       if ($user->profile_picture) {
+        if ($user->profile_picture) {
             $user->profile_picture = base64_encode($user->profile_picture);
         }
 
-     
         return response()->json([
-    'message' => 'User is successfully registered',
-    'user' => $user, 
-]);
+            "message" => "User is successfully registered",
+            "user" => $user,
+        ]);
     }
 }
