@@ -14,9 +14,19 @@ use Illuminate\Validation\ValidationException;
 
 class BlogController extends Controller
 {
-  public function all()
+  public function all(Request $request)
   {
-    return Blog::latest()->with("comments")->paginate(6);
+    $query = Blog::query();
+    if ($request->filled('category')) {
+      $query->where('category_id', $request->input('category'));
+    }
+    if ($request->filled('search')) {
+      $search = $request->input('search');
+      $query->where('title', 'like', '%' . $search . '%')
+        ->orWhere('body', 'like', '%' . $search . '%');
+    }
+
+    return $query->latest()->paginate(6);
   }
 
   public function latest()
@@ -26,20 +36,15 @@ class BlogController extends Controller
 
   public function show($id)
   {
-    $blog = Blog::with("user", "category", "comments")->findOrFail($id);
+    $blog = Blog::with("user", "category", "comments", "subscribers:id,name")->findOrFail($id);
 
     $userProfile = $blog->user->profile_picture;
     $blog->user->profile_picture = $userProfile
       ? "data:image/jpeg;base64," . base64_encode($userProfile)
       : null;
 
+
     return $blog;
-  }
-
-
-  public function filterByCategory($id)
-  {
-    return Blog::where("category_id", $id)->get();
   }
 
   public function store(StoreBlogRequest $request)
