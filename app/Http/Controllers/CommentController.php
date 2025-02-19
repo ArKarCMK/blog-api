@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Comment\StoreCommentRequest;
 use App\Models\Blog;
 use App\Models\Comment;
 use Illuminate\Http\Request;
@@ -10,83 +11,88 @@ use Illuminate\Validation\ValidationException;
 
 class CommentController extends Controller
 {
-    public function all($id) 
+    public function all($id)
     {
         try {
-         return Comment::where("blog_id", $id)
-         ->with("user")
-         ->get();
-            
-        } 
-        catch (ValidationException $e) {
+            $comments = Comment::where("blog_id", $id)->with("user")->get();
+
+            foreach ($comments as $comment) {
+                $userProfile = $comment->user->profile_picture;
+
+                if (
+                    $userProfile &&
+                    strpos($userProfile, "data:image/jpeg;base64,") !== 0
+                ) {
+                    $comment->user->profile_picture =
+                        "data:image/jpeg;base64," . base64_encode($userProfile);
+                }
+            }
             return response()->json([
-                'error' => $e->validator->errors()
+                "data" => $comments,
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                "error" => $e->validator->errors(),
             ]);
         }
     }
-    public function store(Request $request,  $id)
+    public function store(StoreCommentRequest $request)
     {
-        try{
-            $blog = Blog::find($id);
-            return $blog;
-            // request()->validate([
-            //     'body'=> 'required',
-            //     'user_id'=> '', 
-            //     'blog_id'=> ''
-            // ]);
+        try {
+            $validatedComment = $request->validated();
+            $validatedComment["user_id"] = Auth::user()->id;
+            $comment = Comment::create($validatedComment);
 
-            // return $blog->comments()->create([
-            //     'body' => $request->body,
-            //     'user_id'=> Auth::user()->id,
-            //     'blog_id'=> $blog->id
-            // ]);
-        }
-        catch(ValidationException $e){
+            // return $comment;
             return response()->json([
-                'error'=> $e->validator->errors()
+                "message" => "Comment is successfully created",
+                "data" => $comment,
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                "error" => $e->validator->errors(),
             ]);
         }
     }
 
-    public function update (Request $request, $id)
+    public function update(Request $request, $id)
     {
-        try{
+        try {
             $comment = Comment::find($id);
-            if($comment){
+            if ($comment) {
                 $request->validate([
-                    'body' => 'required'
+                    "body" => "required",
                 ]);
                 return $comment->update([
-                    'body' => $request->body
+                    "body" => $request->body,
                 ]);
                 return $comment;
-            }
-            else {
+            } else {
                 return null;
             }
-            
-        }
-        catch (ValidationException $e) {
-            return response()->json([
-                'error'=>$e->validator->errors()
-            ], 422);
+        } catch (ValidationException $e) {
+            return response()->json(
+                [
+                    "error" => $e->validator->errors(),
+                ],
+                422
+            );
         }
     }
 
     public function delete($id)
     {
-        try{
+        try {
             $comment = Comment::find($id);
-            if($comment){
+            if ($comment) {
                 $comment->delete($comment);
                 return response()->json([
-                    'message' => 'Comment is successfully deleted'
+                    "message" => "Comment is successfully deleted",
                 ]);
             }
-        }
-        catch(ValidationException $e){
+        } catch (ValidationException $e) {
             return response()->json([
-                'error'=> $e->validator->errors()
+                "error" => $e->validator->errors(),
             ]);
         }
     }
