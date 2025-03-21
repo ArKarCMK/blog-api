@@ -10,12 +10,20 @@ use App\Http\Requests\Blog\UpdateBlogRequest;
 use App\Models\Comment;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class BlogController extends Controller
 {
+  public function base64Encode($data)
+  {
+    $blogImage = $data->image;
+    $data->image = "data:image/jpeg;base64," . base64_encode($blogImage);
+    return $data;
+  }
   public function all(Request $request)
   {
+
     $query = Blog::query();
     if ($request->filled('category')) {
       $query->where('category_id', $request->input('category'));
@@ -26,12 +34,26 @@ class BlogController extends Controller
         ->orWhere('body', 'like', '%' . $search . '%');
     }
 
-    return $query->latest()->paginate(6);
+    $blogs = $query->latest()->paginate(6);
+
+    foreach ($blogs as $blog) {
+      if ($blog->image) {
+
+        $blog = $this->base64Encode($blog);
+      }
+    }
+
+    return $blogs;
   }
 
   public function latest()
   {
-    return Blog::latest()->first();
+    $blog = Blog::latest()->first();
+    if ($blog->image) {
+
+      $blog = $this->base64Encode($blog);
+    }
+    return $blog;
   }
 
   public function show($id)
@@ -42,6 +64,9 @@ class BlogController extends Controller
     $blog->user->profile_picture = $userProfile
       ? "data:image/jpeg;base64," . base64_encode($userProfile)
       : null;
+    if ($blog->image) {
+      $blog = $this->base64Encode($blog);
+    }
 
 
     return $blog;
@@ -52,12 +77,25 @@ class BlogController extends Controller
     try {
       $validatedBlog = $request->validated();
       $validatedBlog["user_id"] = Auth::user()->id;
+
+      if ($request->hasFile("image")) {
+        $file = $request->file("image");
+
+        $binaryData = file_get_contents($file);
+        if (!$binaryData) {
+          throw new \Exception(
+            "Failed to read binary data from image"
+          );
+        }
+        $validatedBlog["image"] = $binaryData;
+      }
       $blog = Blog::create($validatedBlog);
       return response()->json([
         "message" => "Blog is successfully created",
         "blog_id" => $blog->id,
       ]);
     } catch (ValidationException $e) {
+      $validatedBlog = $request->validated();
       return response()->json(
         [
           "error" => $e->validator->errors(),
@@ -75,8 +113,24 @@ class BlogController extends Controller
       if ($blog) {
         $data = $request->validated();
         $data["user_id"] = Auth::user()->id;
+
+        Log::info($data);
+
+        if ($request->hasFile("image")) {
+          $file = $request->file("image");
+
+          $binaryData = file_get_contents($file);
+          if (!$binaryData) {
+            throw new \Exception(
+              "Failed to read binary data from image"
+            );
+          }
+          $data["image"] = $binaryData;
+        }
         $blog->update($data);
-        return $blog;
+        return response()->json([
+          "message" => "Blog is successfully edited"
+        ]);
       } else {
         return null;
       }
@@ -126,11 +180,17 @@ class BlogController extends Controller
   public function blogsByUser($userId)
   {
     try {
-      $blog = Blog::where("user_id", $userId)->get();
+      $blogs = Blog::where("user_id", $userId)->get();
+
+      foreach ($blogs as $blog) {
+        if ($blog->image) {
+          $blog = $this->base64Encode($blog);
+        }
+      }
 
       return response()->json([
         "message" => "data is successfully fetched",
-        "data" => $blog,
+        "data" => $blogs,
       ]);
     } catch (\Exception $e) {
       return response()->json([
